@@ -132,7 +132,7 @@ const QualityStatus = () => (
   </SlideWrapper>
 );
 
-// 第二页：历年改善时间轴（全部）
+// 第二页：历年改善成果（瀑布流布局）
 const ImprovementTimeline = () => {
   // 所有改善数据
   const allImprovements = useMemo(() => {
@@ -143,70 +143,67 @@ const ImprovementTimeline = () => {
     }));
   }, []);
 
-  // 按年份分组
-  const groupedByYear = useMemo(() => {
-    const groups: { [key: number]: typeof allImprovements } = {};
-    allImprovements.forEach(item => {
-      if (!groups[item.year]) groups[item.year] = [];
-      groups[item.year].push(item);
-    });
-    return Object.entries(groups).sort((a, b) => Number(a[0]) - Number(b[0]));
-  }, []);
+  // 将数据分成3列（纵向填充）
+  const columns = useMemo(() => {
+    const total = allImprovements.length;
+    const col1 = allImprovements.slice(0, Math.ceil(total / 3));
+    const col2 = allImprovements.slice(Math.ceil(total / 3), Math.ceil(total * 2 / 3));
+    const col3 = allImprovements.slice(Math.ceil(total * 2 / 3));
+    return [col1, col2, col3];
+  }, [allImprovements]);
+
+  // 获取奖项颜色
+  const getAwardColor = (award: string) => {
+    switch (award) {
+      case '一等奖': return '#FF6B00';
+      case '二等奖': return '#00F5FF';
+      default: return '#888';
+    }
+  };
 
   return (
     <SlideWrapper title="历年改善成果" icon={Award}>
-      <div className="h-full overflow-hidden">
-        {/* 年份标签 */}
-        <div className="flex gap-3 mb-4">
-          {groupedByYear.map(([year]) => (
-            <div key={year} className="px-3 py-1 bg-[#1A1A1C] border border-[#333] rounded">
-              <span className="text-base font-bold text-[#00F5FF]">{year}</span>
-              <span className="text-xs text-[#666] ml-1">年</span>
+      <div className="h-full flex flex-col">
+        {/* 三列布局 */}
+        <div className="flex-1 flex gap-4 overflow-hidden">
+          {columns.map((col, colIdx) => (
+            <div key={colIdx} className="flex-1 flex flex-col gap-3 overflow-y-auto custom-scrollbar pr-1">
+              {col.map((item) => (
+                <div 
+                  key={item.id} 
+                  className="bg-[#111] border border-[#222] p-3 hover:border-[#00F5FF] transition-colors group flex-shrink-0"
+                >
+                  {/* 年份和日期 */}
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-bold text-[#00F5FF]">{item.year}年</span>
+                    <span className="text-xs text-[#666]">{item.date}</span>
+                  </div>
+                  
+                  {/* 标题 */}
+                  <h4 className="text-base font-bold text-white group-hover:text-[#00F5FF] transition-colors leading-tight mb-2">
+                    {item.title}
+                  </h4>
+                  
+                  {/* 奖项标签 */}
+                  <div className="flex justify-end">
+                    <span 
+                      className="px-3 py-1 text-xs font-bold rounded"
+                      style={{ 
+                        backgroundColor: `${getAwardColor(item.award)}20`,
+                        color: getAwardColor(item.award)
+                      }}
+                    >
+                      {item.award}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>
 
-        {/* 时间轴内容 */}
-        <div className="overflow-y-auto h-[calc(100%-50px)] pr-2 custom-scrollbar">
-          <div className="relative pl-6">
-            {/* 中央时间线 */}
-            <div className="absolute left-0 top-0 bottom-0 w-px bg-[#333]" />
-            
-            {groupedByYear.map(([year, items]) => (
-              <div key={year} className="mb-6">
-                {/* 年份节点 */}
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="absolute left-[-6px] w-3 h-3 rounded-full bg-[#00F5FF] border-3 border-[#0A0A0B]" />
-                  <div className="text-2xl font-black text-[#00F5FF]">{year}</div>
-                </div>
-                
-                {/* 该年的改善项 - 网格布局 */}
-                <div className="grid grid-cols-3 gap-3 ml-5">
-                  {items.map((item, idx) => (
-                    <div key={`${year}-${idx}`} className="bg-[#111] border border-[#222] p-3 hover:border-[#00F5FF] transition-colors group">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-xs text-[#666]">{item.date}</span>
-                        <span className={`px-2 py-0.5 text-xs font-bold rounded ${
-                          item.award === '一等奖' ? 'bg-[#FF6B00]/20 text-[#FF6B00]' :
-                          item.award === '二等奖' ? 'bg-[#00F5FF]/20 text-[#00F5FF]' :
-                          'bg-[#666]/20 text-[#888]'
-                        }`}>
-                          {item.award}
-                        </span>
-                      </div>
-                      <h4 className="text-sm font-bold text-white group-hover:text-[#00F5FF] transition-colors leading-tight">
-                        {item.title}
-                      </h4>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* 底部统计 */}
-        <div className="absolute bottom-16 right-8 flex gap-6">
+        <div className="flex justify-end gap-8 mt-4 pt-4 border-t border-[#1A1A1C]">
           <div className="text-center">
             <div className="text-2xl font-black text-[#00F5FF]">{allImprovements.length}</div>
             <div className="text-xs text-[#666]">改善成果</div>
