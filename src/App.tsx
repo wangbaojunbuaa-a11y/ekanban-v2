@@ -132,14 +132,11 @@ const QualityStatus = () => (
   </SlideWrapper>
 );
 
-// 第二页A：历年改善时间轴（2017-2020）
-const ImprovementTimelineA = () => {
-  // 2017-2020年的数据
-  const earlyImprovements = useMemo(() => {
-    return IMPROVEMENTS_HISTORY.filter(item => {
-      const year = new Date(item.date).getFullYear();
-      return year >= 2017 && year <= 2020;
-    }).map((item, index) => ({
+// 第二页：历年改善时间轴（全部）
+const ImprovementTimeline = () => {
+  // 所有改善数据
+  const allImprovements = useMemo(() => {
+    return IMPROVEMENTS_HISTORY.map((item, index) => ({
       ...item,
       id: index,
       year: new Date(item.date).getFullYear(),
@@ -148,8 +145,8 @@ const ImprovementTimelineA = () => {
 
   // 按年份分组
   const groupedByYear = useMemo(() => {
-    const groups: { [key: number]: typeof earlyImprovements } = {};
-    earlyImprovements.forEach(item => {
+    const groups: { [key: number]: typeof allImprovements } = {};
+    allImprovements.forEach(item => {
       if (!groups[item.year]) groups[item.year] = [];
       groups[item.year].push(item);
     });
@@ -157,39 +154,39 @@ const ImprovementTimelineA = () => {
   }, []);
 
   return (
-    <SlideWrapper title="历年改善成果 (2017-2020)" icon={Award}>
+    <SlideWrapper title="历年改善成果" icon={Award}>
       <div className="h-full overflow-hidden">
         {/* 年份标签 */}
-        <div className="flex gap-4 mb-6">
+        <div className="flex gap-3 mb-4">
           {groupedByYear.map(([year]) => (
-            <div key={year} className="px-4 py-2 bg-[#1A1A1C] border border-[#333] rounded">
-              <span className="text-lg font-bold text-[#00F5FF]">{year}</span>
-              <span className="text-xs text-[#666] ml-2">年</span>
+            <div key={year} className="px-3 py-1 bg-[#1A1A1C] border border-[#333] rounded">
+              <span className="text-base font-bold text-[#00F5FF]">{year}</span>
+              <span className="text-xs text-[#666] ml-1">年</span>
             </div>
           ))}
         </div>
 
         {/* 时间轴内容 */}
-        <div className="overflow-y-auto h-[calc(100%-60px)] pr-4 custom-scrollbar">
-          <div className="relative pl-8">
+        <div className="overflow-y-auto h-[calc(100%-50px)] pr-2 custom-scrollbar">
+          <div className="relative pl-6">
             {/* 中央时间线 */}
             <div className="absolute left-0 top-0 bottom-0 w-px bg-[#333]" />
             
             {groupedByYear.map(([year, items]) => (
-              <div key={year} className="mb-8">
+              <div key={year} className="mb-6">
                 {/* 年份节点 */}
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="absolute left-[-8px] w-4 h-4 rounded-full bg-[#00F5FF] border-4 border-[#0A0A0B]" />
-                  <div className="text-3xl font-black text-[#00F5FF]">{year}</div>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="absolute left-[-6px] w-3 h-3 rounded-full bg-[#00F5FF] border-3 border-[#0A0A0B]" />
+                  <div className="text-2xl font-black text-[#00F5FF]">{year}</div>
                 </div>
                 
-                {/* 该年的改善项 */}
-                <div className="grid grid-cols-2 gap-4 ml-6">
+                {/* 该年的改善项 - 网格布局 */}
+                <div className="grid grid-cols-3 gap-3 ml-5">
                   {items.map((item, idx) => (
-                    <div key={`${year}-${idx}`} className="bg-[#111] border border-[#222] p-4 hover:border-[#00F5FF] transition-colors group">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-sm text-[#666]">{item.date}</span>
-                        <span className={`px-2 py-1 text-xs font-bold rounded ${
+                    <div key={`${year}-${idx}`} className="bg-[#111] border border-[#222] p-3 hover:border-[#00F5FF] transition-colors group">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs text-[#666]">{item.date}</span>
+                        <span className={`px-2 py-0.5 text-xs font-bold rounded ${
                           item.award === '一等奖' ? 'bg-[#FF6B00]/20 text-[#FF6B00]' :
                           item.award === '二等奖' ? 'bg-[#00F5FF]/20 text-[#00F5FF]' :
                           'bg-[#666]/20 text-[#888]'
@@ -197,7 +194,7 @@ const ImprovementTimelineA = () => {
                           {item.award}
                         </span>
                       </div>
-                      <h4 className="text-lg font-bold text-white group-hover:text-[#00F5FF] transition-colors">
+                      <h4 className="text-sm font-bold text-white group-hover:text-[#00F5FF] transition-colors leading-tight">
                         {item.title}
                       </h4>
                     </div>
@@ -209,108 +206,14 @@ const ImprovementTimelineA = () => {
         </div>
 
         {/* 底部统计 */}
-        <div className="absolute bottom-20 right-8 flex gap-8">
+        <div className="absolute bottom-16 right-8 flex gap-6">
           <div className="text-center">
-            <div className="text-3xl font-black text-[#00F5FF]">{earlyImprovements.length}</div>
+            <div className="text-2xl font-black text-[#00F5FF]">{allImprovements.length}</div>
             <div className="text-xs text-[#666]">改善成果</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-black text-[#FF6B00]">
-              {earlyImprovements.filter(i => i.award === '一等奖').length}
-            </div>
-            <div className="text-xs text-[#666]">一等奖</div>
-          </div>
-        </div>
-      </div>
-    </SlideWrapper>
-  );
-};
-
-// 第二页B：历年改善时间轴（2022-2024）
-const ImprovementTimelineB = () => {
-  // 2022-2024年的数据
-  const recentImprovements = useMemo(() => {
-    return IMPROVEMENTS_HISTORY.filter(item => {
-      const year = new Date(item.date).getFullYear();
-      return year >= 2022;
-    }).map((item, index) => ({
-      ...item,
-      id: index,
-      year: new Date(item.date).getFullYear(),
-    }));
-  }, []);
-
-  // 按年份分组
-  const groupedByYear = useMemo(() => {
-    const groups: { [key: number]: typeof recentImprovements } = {};
-    recentImprovements.forEach(item => {
-      if (!groups[item.year]) groups[item.year] = [];
-      groups[item.year].push(item);
-    });
-    return Object.entries(groups).sort((a, b) => Number(a[0]) - Number(b[0]));
-  }, []);
-
-  return (
-    <SlideWrapper title="历年改善成果 (2022-2024)" icon={Award}>
-      <div className="h-full overflow-hidden">
-        {/* 年份标签 */}
-        <div className="flex gap-4 mb-6">
-          {groupedByYear.map(([year]) => (
-            <div key={year} className="px-4 py-2 bg-[#1A1A1C] border border-[#333] rounded">
-              <span className="text-lg font-bold text-[#00F5FF]">{year}</span>
-              <span className="text-xs text-[#666] ml-2">年</span>
-            </div>
-          ))}
-        </div>
-
-        {/* 时间轴内容 */}
-        <div className="overflow-y-auto h-[calc(100%-60px)] pr-4 custom-scrollbar">
-          <div className="relative pl-8">
-            {/* 中央时间线 */}
-            <div className="absolute left-0 top-0 bottom-0 w-px bg-[#333]" />
-            
-            {groupedByYear.map(([year, items]) => (
-              <div key={year} className="mb-8">
-                {/* 年份节点 */}
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="absolute left-[-8px] w-4 h-4 rounded-full bg-[#00F5FF] border-4 border-[#0A0A0B]" />
-                  <div className="text-3xl font-black text-[#00F5FF]">{year}</div>
-                </div>
-                
-                {/* 该年的改善项 */}
-                <div className="grid grid-cols-2 gap-4 ml-6">
-                  {items.map((item, idx) => (
-                    <div key={`${year}-${idx}`} className="bg-[#111] border border-[#222] p-4 hover:border-[#00F5FF] transition-colors group">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-sm text-[#666]">{item.date}</span>
-                        <span className={`px-2 py-1 text-xs font-bold rounded ${
-                          item.award === '一等奖' ? 'bg-[#FF6B00]/20 text-[#FF6B00]' :
-                          item.award === '二等奖' ? 'bg-[#00F5FF]/20 text-[#00F5FF]' :
-                          'bg-[#666]/20 text-[#888]'
-                        }`}>
-                          {item.award}
-                        </span>
-                      </div>
-                      <h4 className="text-lg font-bold text-white group-hover:text-[#00F5FF] transition-colors">
-                        {item.title}
-                      </h4>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 底部统计 */}
-        <div className="absolute bottom-20 right-8 flex gap-8">
-          <div className="text-center">
-            <div className="text-3xl font-black text-[#00F5FF]">{recentImprovements.length}</div>
-            <div className="text-xs text-[#666]">改善成果</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-black text-[#FF6B00]">
-              {recentImprovements.filter(i => i.award === '一等奖').length}
+            <div className="text-2xl font-black text-[#FF6B00]">
+              {allImprovements.filter(i => i.award === '一等奖').length}
             </div>
             <div className="text-xs text-[#666]">一等奖</div>
           </div>
@@ -398,8 +301,7 @@ export default function EKanbanApp() {
 
   const slides = useMemo(() => [
     <QualityStatus />,
-    <ImprovementTimelineA />,
-    <ImprovementTimelineB />,
+    <ImprovementTimeline />,
     <Plan2026Timeline />
   ], []);
 
