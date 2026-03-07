@@ -1,4 +1,4 @@
-name: Build and Release
+name: Build Windows App
 
 on:
   push:
@@ -21,18 +21,22 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build Electron app
-        run: npm run electron:build
+      - name: Build application
+        run: npm run build
 
-      - name: Upload Windows portable
+      - name: Build Windows executable
+        run: npx electron-builder --win --publish never
+
+      - name: Upload portable executable
         uses: actions/upload-artifact@v4
         with:
-          name: EKANBAN-Windows-Portable
-          path: dist_electron/win-unpacked/
-
-      - name: Upload Windows installer
-        uses: actions/upload-artifact@v4
-        with:
-          name: EKANBAN-Windows-Installer
+          name: EKANBAN-Portable
           path: dist_electron/*.exe
-          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Upload unpacked folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: EKANBAN-Windows
+          path: dist_electron/win-unpacked/
+          retention-days: 30
