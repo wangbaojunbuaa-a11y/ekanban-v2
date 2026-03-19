@@ -32,6 +32,20 @@ const IMPROVEMENTS_HISTORY = [
   { date: '2024-10-07', title: '功率模块试验台温度传感器固定机构', award: '二等奖' }
 ];
 
+const RECENT_IMPROVEMENTS = [
+  { date: '2025-05-01', title: '功率模块把手螺纹改善' },
+  { date: '2025-07-01', title: '功率模块低压电源线接线方式改善' },
+  { date: '2025-07-01', title: '功率模块绝缘耐压区无纸化改善' },
+  { date: '2025-09-01', title: 'CR450牵引模块测试测试线束' },
+  { date: '2025-09-01', title: '功率模块相间隔离材质改善' },
+  { date: '2025-09-01', title: '功率模块产线物料车改造' },
+  { date: '2025-10-01', title: '地铁功率模块例行试验台' },
+  { date: '2025-11-01', title: '功率模块IGBT门控线端子紧固状态检查' },
+  { date: '2025-11-01', title: '叉式连接器螺钉拧紧控制优化' },
+  { date: '2025-12-01', title: '可堆叠3D打印标准件托盘' },
+  { date: '2026-01-01', title: '功率模块IGBT手动涂敷信息自动记录与报告生成' }
+];
+
 // 2026年计划数据
 const PLAN_2026 = [
   { date: '2026-04-01', title: '风冷功率模块自动测试试验台' },
@@ -132,39 +146,41 @@ const QualityStatus = () => (
   </SlideWrapper>
 );
 
-// 第二页：历年改善成果（瀑布流布局）
-const ImprovementTimeline = () => {
-  // 所有改善数据
+const ImprovementBoard: React.FC<{
+  title: string;
+  items: Array<{ date: string; title: string; award?: string }>;
+  accentLabel: string;
+}> = ({ title, items, accentLabel }) => {
   const allImprovements = useMemo(() => {
-    return IMPROVEMENTS_HISTORY.map((item, index) => ({
-      ...item,
-      id: index,
-      year: new Date(item.date).getFullYear(),
-    }));
-  }, []);
+    return [...items]
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .map((item, index) => ({
+        ...item,
+        id: index,
+        year: new Date(item.date).getFullYear(),
+      }));
+  }, [items]);
 
-  // 将数据分成3列（纵向填充）
   const columns = useMemo(() => {
-    const total = allImprovements.length;
-    const col1 = allImprovements.slice(0, Math.ceil(total / 3));
-    const col2 = allImprovements.slice(Math.ceil(total / 3), Math.ceil(total * 2 / 3));
-    const col3 = allImprovements.slice(Math.ceil(total * 2 / 3));
-    return [col1, col2, col3];
+    const result = [[], [], []] as typeof allImprovements[];
+    allImprovements.forEach((item, index) => {
+      result[index % 3].push(item);
+    });
+    return result;
   }, [allImprovements]);
 
-  // 获取奖项颜色
-  const getAwardColor = (award: string) => {
+  const getAwardColor = (award?: string) => {
     switch (award) {
       case '一等奖': return '#FF6B00';
       case '二等奖': return '#00F5FF';
-      default: return '#888';
+      case '三等奖': return '#A3A3A3';
+      default: return '#7CFF7C';
     }
   };
 
   return (
-    <SlideWrapper title="历年改善成果" icon={Award}>
+    <SlideWrapper title={title} icon={Award}>
       <div className="h-full flex flex-col">
-        {/* 三列布局 */}
         <div className="flex-1 flex gap-4 overflow-hidden">
           {columns.map((col, colIdx) => (
             <div key={colIdx} className="flex-1 flex flex-col gap-3 overflow-y-auto custom-scrollbar pr-1">
@@ -178,13 +194,11 @@ const ImprovementTimeline = () => {
                     <span className="text-sm font-bold text-[#00F5FF]">{item.year}年</span>
                     <span className="text-xs text-[#666]">{item.date}</span>
                   </div>
-                  
-                  {/* 标题 */}
+
                   <h4 className="text-base font-bold text-white group-hover:text-[#00F5FF] transition-colors leading-tight mb-2">
                     {item.title}
                   </h4>
-                  
-                  {/* 奖项标签 */}
+
                   <div className="flex justify-end">
                     <span 
                       className="px-3 py-1 text-xs font-bold rounded"
@@ -202,23 +216,42 @@ const ImprovementTimeline = () => {
           ))}
         </div>
 
-        {/* 底部统计 */}
         <div className="flex justify-end gap-8 mt-4 pt-4 border-t border-[#1A1A1C]">
           <div className="text-center">
             <div className="text-2xl font-black text-[#00F5FF]">{allImprovements.length}</div>
-            <div className="text-xs text-[#666]">改善成果</div>
+            <div className="text-xs text-[#666]">{accentLabel}</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-black text-[#FF6B00]">
-              {allImprovements.filter(i => i.award === '一等奖').length}
+            <div className="text-2xl font-black text-[#FF6B00]">{columns.length}</div>
+            <div className="text-xs text-[#666]">展示列数</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-black text-[#7CFF7C]">
+              {new Set(allImprovements.map((i) => i.year)).size}
             </div>
-            <div className="text-xs text-[#666]">一等奖</div>
+            <div className="text-xs text-[#666]">覆盖年份</div>
           </div>
         </div>
       </div>
     </SlideWrapper>
   );
 };
+
+const ImprovementTimeline = () => (
+  <ImprovementBoard
+    title="历年改善成果"
+    items={IMPROVEMENTS_HISTORY}
+    accentLabel="改善成果"
+  />
+);
+
+const ImprovementTimelineRecent = () => (
+  <ImprovementBoard
+    title="改善成果续篇"
+    items={RECENT_IMPROVEMENTS}
+    accentLabel="新增项目"
+  />
+);
 
 // 第三页：2026年计划时间轴
 const Plan2026Timeline = () => {
@@ -299,6 +332,7 @@ export default function EKanbanApp() {
   const slides = useMemo(() => [
     <QualityStatus />,
     <ImprovementTimeline />,
+    <ImprovementTimelineRecent />,
     <Plan2026Timeline />
   ], []);
 
