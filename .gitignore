@@ -6,6 +6,7 @@ dist/
 dist_electron/
 release-v*/
 *.exe
+github-artifacts/
 
 # Logs
 npm-debug.log*

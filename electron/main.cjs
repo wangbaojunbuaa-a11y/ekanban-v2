@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const isDev = !app.isPackaged;
 
@@ -25,7 +25,27 @@ function createWindow() {
     // 开发时打开 DevTools 调试，生产环境可注释掉
     // win.webContents.openDevTools();
   }
+
+  win.on('enter-full-screen', () => {
+    win.webContents.send('fullscreen-changed', true);
+  });
+
+  win.on('leave-full-screen', () => {
+    win.webContents.send('fullscreen-changed', false);
+  });
 }
+
+ipcMain.handle('fullscreen:get', (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  return win ? win.isFullScreen() : false;
+});
+
+ipcMain.handle('fullscreen:set', (event, value) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (!win) return false;
+  win.setFullScreen(Boolean(value));
+  return win.isFullScreen();
+});
 
 app.whenReady().then(() => {
   createWindow();

@@ -4,6 +4,8 @@ import {
   Award,
   ChevronLeft,
   ChevronRight,
+  Maximize,
+  Minimize,
   Pause,
   Play,
   Zap,
@@ -239,7 +241,7 @@ const ImprovementBoard: React.FC<{
 
 const ImprovementTimeline = () => (
   <ImprovementBoard
-    title="历年改善成果"
+    title="历年改善成果及获奖情况"
     items={IMPROVEMENTS_HISTORY}
     accentLabel="改善成果"
   />
@@ -247,7 +249,7 @@ const ImprovementTimeline = () => (
 
 const ImprovementTimelineRecent = () => (
   <ImprovementBoard
-    title="改善成果续篇"
+    title="2025年-2026年初已实施改善"
     items={RECENT_IMPROVEMENTS}
     accentLabel="新增项目"
   />
@@ -328,6 +330,7 @@ export default function EKanbanApp() {
   const [isPlaying, setIsPlaying] = useState(true);
   const [intervalTime, setIntervalTime] = useState(10); // seconds
   const [isLocked, setIsLocked] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(true);
 
   const slides = useMemo(() => [
     <QualityStatus />,
@@ -353,6 +356,30 @@ export default function EKanbanApp() {
     }
     return () => { if (timer) clearInterval(timer); };
   }, [isPlaying, intervalTime, nextSlide, isLocked]);
+
+  useEffect(() => {
+    if (!window.electronAPI) return;
+
+    let mounted = true;
+    window.electronAPI.getFullscreenState().then((value) => {
+      if (mounted) setIsFullscreen(value);
+    });
+
+    const unsubscribe = window.electronAPI.onFullscreenChanged((value) => {
+      setIsFullscreen(value);
+    });
+
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
+  }, []);
+
+  const toggleFullscreen = useCallback(async () => {
+    if (!window.electronAPI) return;
+    const nextValue = await window.electronAPI.setFullscreenState(!isFullscreen);
+    setIsFullscreen(nextValue);
+  }, [isFullscreen]);
 
   return (
     <div className="fixed inset-0 bg-black flex flex-col font-sans select-none cursor-crosshair">
@@ -424,6 +451,16 @@ export default function EKanbanApp() {
         >
           <Settings size={16} />
           <span className="text-[10px] uppercase font-bold tracking-widest">{isLocked ? 'PINNED' : 'AUTO'}</span>
+        </button>
+
+        <button
+          onClick={toggleFullscreen}
+          className="flex items-center gap-2 px-4 py-2 border border-[#333] rounded text-[#666] transition-colors hover:border-[#00F5FF] hover:text-[#00F5FF]"
+        >
+          {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
+          <span className="text-[10px] uppercase font-bold tracking-widest">
+            {isFullscreen ? 'EXIT FULLSCREEN' : 'ENTER FULLSCREEN'}
+          </span>
         </button>
       </div>
 

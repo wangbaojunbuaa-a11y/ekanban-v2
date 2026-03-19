@@ -22,3 +22,11 @@ declare module '*.svg' {
   const src: string;
   export default src;
 }
+
+interface Window {
+  electronAPI?: {
+    getFullscreenState: () => Promise<boolean>;
+    setFullscreenState: (value: boolean) => Promise<boolean>;
+    onFullscreenChanged: (callback: (isFullscreen: boolean) => void) => () => void;
+  };
+}
